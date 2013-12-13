@@ -1,6 +1,5 @@
 package com.hibernate.EmpProfile.Util;
 
-import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
@@ -11,11 +10,21 @@ public class HibernateUtil {
 	private static SessionFactory sessionFactory;
 	private static ServiceRegistry serviceRegistry;
 	
-	public static SessionFactory configureSessionFactory() throws HibernateException{
+	static {
 		Configuration conf = new Configuration();
 		conf.configure();
 		serviceRegistry = new ServiceRegistryBuilder().applySettings(conf.getProperties()).buildServiceRegistry();
-		sessionFactory = conf.buildSessionFactory(serviceRegistry);
+		
+		try {
+			sessionFactory = conf.buildSessionFactory(serviceRegistry);
+		} catch(Exception e){
+			System.err.println("Initial SessionFactory creation Failed. "+e);
+			throw new ExceptionInInitializerError(e);
+		}
+
+	}
+	
+	public static SessionFactory getSessionFactory(){
 		return sessionFactory;
 	}
 

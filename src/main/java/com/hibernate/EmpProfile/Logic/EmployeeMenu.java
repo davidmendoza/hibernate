@@ -31,12 +31,15 @@ public class EmployeeMenu {
 			break;
 			
 			case 2:
+				empLogic.view();
 			break;
 			
 			case 3:
+				empLogic.delete();
 			break;
 			
 			case 4:
+				empLogic.update();
 			break;
 			
 			default:

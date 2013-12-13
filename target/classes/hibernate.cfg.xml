@@ -11,16 +11,14 @@
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
     <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
  
-    <property name="show_sql">true</property>
+    <property name="show_sql">false</property>
  
-    <property name="format_sql">true</property>
-    <property name="hbm2ddl.auto">create</property>
+    <property name="format_sql">false</property>
  
     <property name="connection.pool_size">1</property>
     <property name="current_session_context_class">thread</property>
 
 	<mapping resource="EmployeeDetails.hbm.xml" />
-	<mapping resource="Dept.hbm.xml" />
 	
 </session-factory>
 </hibernate-configuration>
