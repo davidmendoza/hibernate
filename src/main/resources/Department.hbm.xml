@@ -4,10 +4,10 @@
  "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
  
  <hibernate-mapping>
- 	<class name="com.hibernate.EmpProfile.Domain.Dept" table="Dept">
+ 	<class name="com.hibernate.EmpProfile.Domain.Department" table="Department">
  		<id name="id" type="int" column="id">
- 			<generator class="native"/>
+ 			<generator class="identity"/>
  		</id>
- 		<property name="deptName" column="deptName" type="string"/>
+ 		<property name="deptName" column="dept_name" type="string"/>
  	</class>
  </hibernate-mapping>

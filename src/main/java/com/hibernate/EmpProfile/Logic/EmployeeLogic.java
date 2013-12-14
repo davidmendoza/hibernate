@@ -7,7 +7,9 @@ import java.util.Scanner;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import com.hibernate.EmpProfile.Domain.EmployeeDetails;
+
+import com.hibernate.EmpProfile.Domain.Department;
+import com.hibernate.EmpProfile.Domain.Employee;
 import com.hibernate.EmpProfile.Util.HibernateUtil;
 
 public class EmployeeLogic {
@@ -23,7 +25,10 @@ public class EmployeeLogic {
 		try{
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
-			session.save(new EmployeeDetails(userInput.get(0),userInput.get(1),Integer.parseInt(userInput.get(2)),Integer.parseInt(userInput.get(3))));
+			Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
+			Employee emp = new Employee(userInput.get(0),userInput.get(1),Integer.parseInt(userInput.get(2)));
+			emp.setDept(dept);
+			session.save(emp);
 			session.getTransaction().commit();
 		} catch(HibernateException e) {
 			if (session!= null) session.getTransaction().rollback();
@@ -38,7 +43,7 @@ public class EmployeeLogic {
 		String lName;
 		Scanner sc = new Scanner(System.in);
 		Scanner sc2 = new Scanner(System.in);
-		System.out.print("\t[1]View All [2]Search by lastname :$ ");
+		System.out.print("\t[1]View All [2]Search by lastname [3]Search by Department :$ ");
 		
 		while (!sc.hasNextInt()){
 			System.out.print("\tPlease enter a valid number :$ ");
@@ -51,10 +56,10 @@ public class EmployeeLogic {
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
 				session.getTransaction().begin();
-				List<EmployeeDetails> employees = session.createQuery("from EmployeeDetails").list();
-				System.out.println("\tId - Employee name - Age");
-				for (EmployeeDetails ed: employees){
-					System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getAge());
+				List<Employee> employees = session.createQuery("from Employee").list();
+				System.out.println("\tId - Employee name - Age - Department");
+				for (Employee ed: employees){
+					System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getAge()+" - "+ed.getDept().getDeptName());
 				}
 				session.getTransaction().rollback();
 			} catch(HibernateException e) {
@@ -70,17 +75,17 @@ public class EmployeeLogic {
 				
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
 				session.getTransaction().begin();
-				String hql = ("from EmployeeDetails where last_name like :lName");
+				String hql = ("from Employee where last_name like :lName");
 				Query query = session.createQuery(hql);
 				query.setParameter("lName", lName);
-				List<EmployeeDetails> employees = query.list();
+				List<Employee> employees = query.list();
 				
 				if (employees.isEmpty()){	
 					System.out.println("\tEmployee Not Found");
 				} else {
-					System.out.println("\tId - Employee name - Age");
-					for (EmployeeDetails ed: employees){
-						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getAge());
+					System.out.println("\tId - Employee name - Age - Department");
+					for (Employee ed: employees){
+						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getAge()+" - "+ed.getDept().getDeptName());
 					}
 				}
 				session.getTransaction().rollback();
@@ -90,6 +95,9 @@ public class EmployeeLogic {
 			}
 		break;
 		
+		case 3:
+			
+		break;
 		default:
 		break;
 		}
@@ -112,7 +120,7 @@ public class EmployeeLogic {
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
 				session.getTransaction().begin();
-				EmployeeDetails ed = (EmployeeDetails)session.get(EmployeeDetails.class, id);
+				Employee ed = (Employee)session.get(Employee.class, id);
 				
 				if (ed == null){
 					System.out.println("\tEmployee Does not exist");
@@ -140,22 +148,22 @@ public class EmployeeLogic {
 			sc.next();
 		}
 		id = sc.nextInt();
-		
+		List<String> userInput = EmployeeLogic.getUserInput();
 		try {
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
-			EmployeeDetails ed = (EmployeeDetails)session.get(EmployeeDetails.class, id);
+			Employee ed = (Employee)session.get(Employee.class, id);
 			
 			if (ed == null){
 				System.out.println("\tEmployee Does not exist");
 				session.getTransaction().rollback();
 			} else {
 				System.out.println("\tEmployee "+ed.getLastName()+", "+ed.getFirstName());
-				List<String> userInput = EmployeeLogic.getUserInput();
+				Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
 				ed.setFirstName(userInput.get(0));
 				ed.setLastName(userInput.get(1));
 				ed.setAge(Integer.parseInt(userInput.get(2)));
-				ed.setDeptId(Integer.parseInt(userInput.get(3)));
+				ed.setDept(dept);
 				
 				session.update(ed);
 				session.getTransaction().commit();
@@ -171,51 +179,68 @@ public class EmployeeLogic {
 	private static List<String> getUserInput(){
 		List<String> userInput = new ArrayList<String>();
 		
-		String fname;
-		String lname;
-		int age;
-		int deptId;
-		Scanner sc = new Scanner(System.in);
+		try{
+			
+			String fname;
+			String lname;
+			int age;
+			int deptId;
+			Session session = null;
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.print("\tEnter first name :$ ");
+			fname = sc.nextLine();
+			
+			
+			System.out.print("\tEnter last name :$ ");
+			lname = sc.nextLine();
+			
+			
+			System.out.print("\tEnter age :$ ");
+			while (!sc.hasNextInt()){
+				System.out.print("\tPlease enter a valid number :$ ");
+				sc.next();
+			}
+			age = sc.nextInt();
+			
+			
+			System.out.println("\tChoose Department");
+			
+			session = HibernateUtil.getSessionFactory().getCurrentSession();
+			session.getTransaction().begin();
+			List<Department> all = session.createQuery("from Department").list();
+			for (Department dep: all){
+				System.out.println("\t["+dep.getId()+"] "+dep.getDeptName()+"  ");
+			}
+			System.out.print("\t: $ ");
+			session.getTransaction().rollback();
 		
-		System.out.print("\tEnter first name :$ ");
-		fname = sc.nextLine();
 		
-		
-		System.out.print("\tEnter last name :$ ");
-		lname = sc.nextLine();
-		
-		
-		System.out.print("\tEnter age :$ ");
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next();
-		}
-		age = sc.nextInt();
-		
-		
-		System.out.println("\tChoose Department");
-		System.out.print("\t[1]HR [2]Admin [3]QA [4]Dev :$ ");
-		
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next(); 
-		}
-		deptId = sc.nextInt();
-		
-		while (deptId < 1 || deptId > 4) {
-			System.out.print("\tPlease choose one of the choices :$ ");
 			while (!sc.hasNextInt()){
 				System.out.print("\tPlease enter a valid number :$ ");
 				sc.next(); 
 			}
-			
 			deptId = sc.nextInt();
+			
+			while (deptId < 1 || deptId > all.size()) {
+				System.out.print("\tPlease choose one of the choices :$ ");
+				while (!sc.hasNextInt()){
+					System.out.print("\tPlease enter a valid number :$ ");
+					sc.next(); 
+				}
+				deptId = sc.nextInt();
+			}
+			
+			
+			userInput.add(fname);
+			userInput.add(lname);
+			userInput.add(Integer.toString(age));
+			userInput.add(Integer.toString(deptId));
+			
+			return userInput;
+		} catch (HibernateException e){
+			System.err.println("There was an error in the database: "+ e);
 		}
-		
-		userInput.add(fname);
-		userInput.add(lname);
-		userInput.add(Integer.toString(age));
-		userInput.add(Integer.toString(deptId));
 		return userInput;
 	}
 }

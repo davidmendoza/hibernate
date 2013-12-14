@@ -1,22 +1,21 @@
 package com.hibernate.EmpProfile.Domain;
 
-public class EmployeeDetails {
+public class Employee {
 	
 	private int id;
 	private String firstName;
 	private String lastName;
 	private int age;
-	private int deptId;
+	private Department dept;
 	
-	public EmployeeDetails(){
+	public Employee(){
 		
 	}
 	
-	public EmployeeDetails(String firstName, String lastName, int age, int deptId) {
+	public Employee(String firstName, String lastName, int age) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.age = age;
-		this.deptId = deptId;
 	}
 	
 	public int getId() {
@@ -51,12 +50,13 @@ public class EmployeeDetails {
 		this.age = age;
 	}
 
-	public int getDeptId() {
-		return deptId;
+	public Department getDept() {
+		return dept;
 	}
 
-	public void setDeptId(int deptId) {
-		this.deptId = deptId;
+	public void setDept(Department dept) {
+		this.dept = dept;
 	}
+
 	
 }

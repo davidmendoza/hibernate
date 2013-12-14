@@ -18,7 +18,8 @@
     <property name="connection.pool_size">1</property>
     <property name="current_session_context_class">thread</property>
 
-	<mapping resource="EmployeeDetails.hbm.xml" />
+	<mapping resource="Employee.hbm.xml" />
+	<mapping resource="Department.hbm.xml"/>
 	
 </session-factory>
 </hibernate-configuration>
