@@ -9,8 +9,7 @@ public class Department {
 		 
 	}
 
-	public Department(int id, String deptName) {
-		this.id = id;
+	public Department(String deptName) {
 		this.deptName = deptName;
 	}
 	

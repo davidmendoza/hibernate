@@ -1,5 +1,8 @@
 package com.hibernate.EmpProfile.Domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Employee {
 	
 	private int id;
@@ -7,6 +10,7 @@ public class Employee {
 	private String lastName;
 	private int age;
 	private Department dept;
+	private Set projects = new HashSet();
 	
 	public Employee(){
 		
@@ -56,6 +60,14 @@ public class Employee {
 
 	public void setDept(Department dept) {
 		this.dept = dept;
+	}
+
+	public Set getProjects() {
+		return projects;
+	}
+
+	public void setProjects(Set projects) {
+		this.projects = projects;
 	}
 
 	

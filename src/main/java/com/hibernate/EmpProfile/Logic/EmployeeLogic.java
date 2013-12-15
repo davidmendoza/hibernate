@@ -96,7 +96,11 @@ public class EmployeeLogic {
 		break;
 		
 		case 3:
-			
+			try {
+				
+			} catch(HibernateException e) {
+				System.err.println("\tThere was an error in the database: "+e);
+			}
 		break;
 		default:
 		break;
@@ -117,15 +121,16 @@ public class EmployeeLogic {
 			
 			id = sc.nextInt();
 			
-			try {
-				session = HibernateUtil.getSessionFactory().getCurrentSession();
-				session.getTransaction().begin();
-				Employee ed = (Employee)session.get(Employee.class, id);
+			
 				
+			Employee ed = EmployeeLogic.getEmployee(id);
+			
+			try {	
 				if (ed == null){
 					System.out.println("\tEmployee Does not exist");
-					session.getTransaction().rollback();
 				} else {
+					session = HibernateUtil.getSessionFactory().getCurrentSession();
+					session.getTransaction().begin();
 					session.delete(ed);
 					session.getTransaction().commit();
 					System.out.println("\tEmployee "+ed.getLastName()+" deleted");
@@ -148,39 +153,58 @@ public class EmployeeLogic {
 			sc.next();
 		}
 		id = sc.nextInt();
-		List<String> userInput = EmployeeLogic.getUserInput();
-		try {
-			session = HibernateUtil.getSessionFactory().getCurrentSession();
-			session.getTransaction().begin();
-			Employee ed = (Employee)session.get(Employee.class, id);
-			
+		Employee ed = EmployeeLogic.getEmployee(id);
+		
+		
 			if (ed == null){
 				System.out.println("\tEmployee Does not exist");
-				session.getTransaction().rollback();
 			} else {
-				System.out.println("\tEmployee "+ed.getLastName()+", "+ed.getFirstName());
-				Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
-				ed.setFirstName(userInput.get(0));
-				ed.setLastName(userInput.get(1));
-				ed.setAge(Integer.parseInt(userInput.get(2)));
-				ed.setDept(dept);
 				
-				session.update(ed);
-				session.getTransaction().commit();
-				System.out.println("\tSuccessfully Updated Employee Details");
+				List<String> userInput = EmployeeLogic.getUserInput();
+				
+				try {		
+					session = HibernateUtil.getSessionFactory().getCurrentSession();
+					session.getTransaction().begin();
+					
+					System.out.println("\tEmployee "+ed.getLastName()+", "+ed.getFirstName());
+					Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
+					ed.setFirstName(userInput.get(0));
+					ed.setLastName(userInput.get(1));
+					ed.setAge(Integer.parseInt(userInput.get(2)));
+					ed.setDept(dept);
+					
+					session.update(ed);
+					session.getTransaction().commit();
+					System.out.println("\tSuccessfully Updated Employee Details");
+					
+			} catch(HibernateException e) {
+				System.err.println("\tThere was an error in the database: "+e);
 			}
 			
+		} 
+	}
+	
+	private static Employee getEmployee(int id){
+		Session session;
+		Employee emp = null;
+		try{
+			session = HibernateUtil.getSessionFactory().getCurrentSession();
+			session.getTransaction().begin();
+			emp = (Employee)session.get(Employee.class, id);
+			System.out.println("\t"+emp.getId()+" - "+emp.getLastName()+", "+emp.getFirstName()+" - "+emp.getDept().getDeptName());
+			session.getTransaction().rollback();
+			return emp;
 		} catch(HibernateException e) {
 			System.err.println("\tThere was an error in the database: "+e);
 		}
 		
+		return emp;
 	}
 	
 	private static List<String> getUserInput(){
 		List<String> userInput = new ArrayList<String>();
 		
 		try{
-			
 			String fname;
 			String lname;
 			int age;
