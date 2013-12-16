@@ -41,6 +41,7 @@ public class EmployeeLogic {
 		Session session = null;
 		int choice;
 		String lName;
+		int deptId;
 		Scanner sc = new Scanner(System.in);
 		Scanner sc2 = new Scanner(System.in);
 		System.out.print("\t[1]View All [2]Search by lastname [3]Search by Department :$ ");
@@ -97,6 +98,30 @@ public class EmployeeLogic {
 		
 		case 3:
 			try {
+				System.out.print("\tEnter Department ID:$ ");
+				
+				while (!sc.hasNextInt()){
+					System.out.print("\tPlease enter a valid number :$ ");
+					sc.next(); 
+				}
+				deptId = sc.nextInt();
+				session = HibernateUtil.getSessionFactory().getCurrentSession();
+				session.getTransaction().begin();
+				String hql = ("from Employee where deptId = :deptId");
+				Query query = session.createQuery(hql);
+				query.setParameter("deptId", deptId);
+				List<Employee> employees = query.list();
+				
+				if (employees.isEmpty()){	
+					System.out.println("\tThere are no Employees in that Department");
+				} else {
+					System.out.println("\t"+employees.get(0).getDept().getDeptName()+" Department Employees");
+					System.out.println("\tId - Employee name - Age");
+					for (Employee ed: employees){
+						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getAge());
+					}
+				}
+				session.getTransaction().rollback();
 				
 			} catch(HibernateException e) {
 				System.err.println("\tThere was an error in the database: "+e);
@@ -112,6 +137,7 @@ public class EmployeeLogic {
 		Session session;
 		Scanner sc = new Scanner(System.in);
 		int id;
+		int choice;
 		
 			System.out.print("\n\tEnter the ID of the employee you wish to delete :$ ");
 			while (!sc.hasNextInt()){
@@ -121,24 +147,53 @@ public class EmployeeLogic {
 			
 			id = sc.nextInt();
 			
-			
-				
 			Employee ed = EmployeeLogic.getEmployee(id);
 			
-			try {	
-				if (ed == null){
-					System.out.println("\tEmployee Does not exist");
+			if (ed == null){
+				System.out.println("\tEmployee Does not exist");
+			} else {
+				try {	
+				session = HibernateUtil.getSessionFactory().getCurrentSession();
+				session.getTransaction().begin();
+				ed = (Employee)session.get(Employee.class, id);
+				if (!ed.getProjects().isEmpty()){
+					System.out.print("\tThis employee is still working on "+ed.getProjects().size()+
+							" projects.\n\tDo you still want to delete? [1]Yes/[2]No :$ ");
+					while (!sc.hasNextInt()){
+						System.out.print("\tPlease enter a valid number :$ ");
+						sc.next();
+					}
+					choice = sc.nextInt();
+					if (choice == 1) {
+						session.delete(ed);
+						session.getTransaction().commit();
+						System.out.println("\tEmployee "+ed.getLastName()+" deleted");
+					} else {
+						session.getTransaction().rollback();
+						System.out.println("\tCancelled Deletion");
+					}
+					
 				} else {
-					session = HibernateUtil.getSessionFactory().getCurrentSession();
-					session.getTransaction().begin();
-					session.delete(ed);
-					session.getTransaction().commit();
-					System.out.println("\tEmployee "+ed.getLastName()+" deleted");
+					System.out.print("\tDelete this employee? [1]Yes/[2]No :$ ");
+					while (!sc.hasNextInt()){
+						System.out.print("\tPlease enter a valid number :$ ");
+						sc.next();
+					}
+					choice = sc.nextInt();
+					if (choice == 1) {
+						session.delete(ed);
+						session.getTransaction().commit();
+						System.out.println("\tEmployee "+ed.getLastName()+" deleted");
+					} else {
+						session.getTransaction().rollback();
+						System.out.println("\tCancelled Deletion");
+					}
 				}
 				
 			} catch(HibernateException e) {
 				System.err.println("\tThere was an error in the database: "+e);
 			}
+		} 
 		
 	}
 	
@@ -152,48 +207,52 @@ public class EmployeeLogic {
 			System.out.print("\tPlease enter a valid number :$ ");
 			sc.next();
 		}
+		
 		id = sc.nextInt();
+		
 		Employee ed = EmployeeLogic.getEmployee(id);
-		
-		
-			if (ed == null){
-				System.out.println("\tEmployee Does not exist");
-			} else {
+		if (ed == null){
+			System.out.println("\tEmployee Does not exist");
+		} else {
+			
+			List<String> userInput = EmployeeLogic.getUserInput();
+			
+			try {		
+				session = HibernateUtil.getSessionFactory().getCurrentSession();
+				session.getTransaction().begin();
 				
-				List<String> userInput = EmployeeLogic.getUserInput();
+				Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
+				ed.setFirstName(userInput.get(0));
+				ed.setLastName(userInput.get(1));
+				ed.setAge(Integer.parseInt(userInput.get(2)));
+				ed.setDept(dept);
 				
-				try {		
-					session = HibernateUtil.getSessionFactory().getCurrentSession();
-					session.getTransaction().begin();
-					
-					System.out.println("\tEmployee "+ed.getLastName()+", "+ed.getFirstName());
-					Department dept = (Department)session.get(Department.class, Integer.parseInt(userInput.get(3)));
-					ed.setFirstName(userInput.get(0));
-					ed.setLastName(userInput.get(1));
-					ed.setAge(Integer.parseInt(userInput.get(2)));
-					ed.setDept(dept);
-					
-					session.update(ed);
-					session.getTransaction().commit();
-					System.out.println("\tSuccessfully Updated Employee Details");
-					
-			} catch(HibernateException e) {
-				System.err.println("\tThere was an error in the database: "+e);
-			}
+				session.update(ed);
+				session.getTransaction().commit();
+				System.out.println("\tSuccessfully Updated Employee Details");
+				
+		} catch(HibernateException e) {
+			System.err.println("\tThere was an error in the database: "+e);
+		}
 			
 		} 
 	}
 	
-	private static Employee getEmployee(int id){
+	public static Employee getEmployee(int id){
 		Session session;
 		Employee emp = null;
 		try{
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
 			emp = (Employee)session.get(Employee.class, id);
-			System.out.println("\t"+emp.getId()+" - "+emp.getLastName()+", "+emp.getFirstName()+" - "+emp.getDept().getDeptName());
-			session.getTransaction().rollback();
-			return emp;
+			if (emp == null) {
+				session.getTransaction().rollback();
+				return emp;
+			} else {
+				System.out.println("\t"+emp.getId()+" - "+emp.getLastName()+", "+emp.getFirstName()+" - "+emp.getDept().getDeptName());
+				session.getTransaction().rollback();
+				return emp;
+			}
 		} catch(HibernateException e) {
 			System.err.println("\tThere was an error in the database: "+e);
 		}

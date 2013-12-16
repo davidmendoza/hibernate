@@ -1,9 +1,13 @@
 package com.hibernate.EmpProfile.Domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Projects {
 	
 	private int id;
 	private String projName;
+	private Set employees = new HashSet();
 	
 	public Projects(){
 		
@@ -27,6 +31,14 @@ public class Projects {
 
 	public void setProjName(String projName) {
 		this.projName = projName;
+	}
+
+	public Set getEmployees() {
+		return employees;
+	}
+
+	public void setEmployees(Set employees) {
+		this.employees = employees;
 	}
 	
 

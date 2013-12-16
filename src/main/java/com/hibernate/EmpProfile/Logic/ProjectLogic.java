@@ -6,6 +6,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 
 import com.hibernate.EmpProfile.Domain.Employee;
@@ -77,15 +78,97 @@ public class ProjectLogic {
 	}
 	
 	public void viewProjectTeams(){
-		System.out.println("viewing project teams");
+		int projId;
+		
+		System.out.println("\tHere is the list of the current projects: ");
+		projId = ProjectLogic.getProjId();
+		ProjectLogic.viewTeam(projId);
+		
 	}
 	
 	public void removeEmployeeFromProject(){
-		System.out.println("removing employee from project");
+		int id;
+		int projId;
+		Session session = null;
+		Set<Integer> employeeIds;
+		Scanner sc = new Scanner(System.in);
+		
+		System.out.println("\tRemove employee from project");
+		projId = ProjectLogic.getProjId();
+		employeeIds = ProjectLogic.viewTeam(projId);
+		if (!employeeIds.isEmpty()){
+			
+			System.out.print("\tEnter the id of the employee you wish to remove from the project :$ ");
+			while (!sc.hasNextInt()){
+				System.out.print("\tPlease enter a valid number :$ ");
+				sc.next(); 
+			}
+			id = sc.nextInt();
+			
+			if (employeeIds.contains((Integer)id)) {
+				try{
+					session = HibernateUtil.getSessionFactory().getCurrentSession();
+					session.getTransaction().begin();
+					Employee emp = (Employee)session.get(Employee.class, id);
+					Projects proj = (Projects)session.get(Projects.class, projId);
+					String sql = "delete from Employee_Project where employee_id = :id and project_id = :projId";
+					Query query = session.createSQLQuery(sql);
+					query.setParameter("id", id);
+					query.setParameter("projId", projId);
+					query.executeUpdate();
+					session.getTransaction().commit();
+					System.out.println("\tRemoved "+emp.getLastName()+", "+emp.getFirstName()+" from project "+proj.getProjName());
+				} catch(HibernateException e) {
+					session.getTransaction().rollback();
+					System.err.println("There was a problem with the database "+ e);
+				}
+			} else {
+				System.out.println("Employee is not in the project");
+			}
+		}
 	}
 	
 	public void removeProject(){
-		System.out.println("removing project");
+		int projId;
+		Long empCount;
+		int choice;
+		Session session = null;
+		Scanner sc = new Scanner(System.in);
+		
+		projId = ProjectLogic.getProjId();
+		if (projId != 0) {
+			try {
+				session = HibernateUtil.getSessionFactory().getCurrentSession();
+				session.getTransaction().begin();
+				String hql = "select count(*) from Projects b JOIN b.employees e where b.id = :projId)";
+				Query query = session.createQuery(hql);
+				query.setParameter("projId", projId);
+				empCount = (Long)query.list().get(0);
+				System.out.print("\tThere are "+empCount+" employees working on this project.\n\tAre you sure you want to delete? [1]Yes/[2]No :$ ");
+				
+				while (!sc.hasNextInt()){
+					System.out.print("\tPlease enter a valid number :$ ");
+					sc.next(); 
+				}
+				choice = sc.nextInt();
+				
+				if (choice == 1){
+					Projects proj = (Projects)session.get(Projects.class, projId);
+					session.delete(proj);
+					session.getTransaction().commit();
+					System.out.println("\tDeleted Project "+proj.getProjName());
+				} else {
+					System.out.println("\tCancelled Deletion");
+					session.getTransaction().rollback();
+				}
+			} catch(HibernateException e) {
+				session.getTransaction().rollback();
+				System.err.println("There was a problem with the database "+ e);
+			}
+		} else {
+			System.out.println("\tProject not found");
+		}
+		
 	}
 	
 	private static int getProjId(){
@@ -126,4 +209,40 @@ public class ProjectLogic {
 		}
 		return 0;
 	}
+	
+	private static Set viewTeam(int projId){
+		Session session = null;
+		Set<Integer> employeeIds = new HashSet();
+		if (projId != 0) {
+			try {
+				session = HibernateUtil.getSessionFactory().getCurrentSession();
+				session.getTransaction().begin();
+				String hql = ("select e from Projects b JOIN b.employees e where b.id = :projId");
+				Query query = session.createQuery(hql);
+				query.setParameter("projId", projId);
+				List<Employee> employees= query.list();
+
+				if (employees.isEmpty()){	
+					System.out.println("\tNo employees registered in this project");
+				} else {
+					System.out.println("\tEmployees registered under the project: ");
+					System.out.println("\tEmployee Id - Employee Name ");
+					for (Employee ed: employees){
+						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName());
+						employeeIds.add(ed.getId());
+					}
+				}
+				session.getTransaction().rollback();
+				return employeeIds;
+			} catch(HibernateException e) {
+				session.getTransaction().rollback();
+				System.err.println("There was a problem with the database "+ e);
+			}
+		} else {
+			System.out.println("\tProject not found");
+			return employeeIds;
+		}
+		return employeeIds;
+	}
+	
 }
