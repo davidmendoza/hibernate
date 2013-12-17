@@ -9,5 +9,9 @@
  			<generator class="identity"/>
  		</id>
  		<property name="deptName" column="dept_name" type="string"/>
+ 		<set name="employees" table="EmployeeDetails" inverse="true">
+ 			<key column="deptId"/>
+ 			<one-to-many class="com.hibernate.EmpProfile.Domain.Employee"/>
+ 		</set>
  	</class>
  </hibernate-mapping>

@@ -4,6 +4,13 @@ import java.util.Scanner;
 
 public class ProjectMenu {
 
+	private static final int ADD_NEW_PROJECT = 1;
+	private static final int ADD_EMPLOYEE_TO_PROJECT = 2;
+	private static final int VIEW_PROJECT_TEAMS = 3;
+	private static final int REMOVE_EMPLOYEE_FROM_PROJECT = 4;
+	private static final int REMOVE_PROJECT = 5;
+	private static final int CHECK_PROJECTS_PER_EMPLOYEE = 6;
+	
 	public void startProjectManagement(){
 		
 		int choice;
@@ -16,6 +23,7 @@ public class ProjectMenu {
 			System.out.println("[3] View Project Teams");
 			System.out.println("[4] Remove Employee from Project");
 			System.out.println("[5] Remove Project");
+			System.out.println("[6] Check Projects per Employee");
 			System.out.println("[0] Back to Main Menu");
 			System.out.print(":$ ");
 			
@@ -26,26 +34,29 @@ public class ProjectMenu {
 			
 			choice = sc.nextInt();
 			switch(choice){
-			case 1:
+			case ADD_NEW_PROJECT:
 				projLogic.addProject();
 			break;
 			
-			case 2:
+			case ADD_EMPLOYEE_TO_PROJECT:
 				projLogic.addEmployeeToProject();
 			break;
 			
-			case 3:
+			case VIEW_PROJECT_TEAMS:
 				projLogic.viewProjectTeams();
 			break;
 			
-			case 4:
+			case REMOVE_EMPLOYEE_FROM_PROJECT:
 				projLogic.removeEmployeeFromProject();
 			break;
 			
-			case 5:
+			case REMOVE_PROJECT:
 				projLogic.removeProject();
 			break;
 			
+			case CHECK_PROJECTS_PER_EMPLOYEE:
+				projLogic.projPerEmployee();
+			break;
 			default:
 			break;
 			}

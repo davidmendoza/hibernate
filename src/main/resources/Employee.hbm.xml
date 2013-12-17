@@ -11,13 +11,14 @@
  		<property name="age" column="age" type="int"/>
  		<property name="firstName" column="first_name" type="string"/>
  		<property name="lastName" column="last_name" type="string"/>
+ 		<property name="gender" column="gender" type="string"/>
  		<many-to-one name="dept" class="com.hibernate.EmpProfile.Domain.Department">
  			<column name="deptId"/>
  		</many-to-one>
- 		<set name="projects" table="Employee_Project">
+ 		<set name="projects" table="Employee_Project" fetch="select">
  			<key column="employee_id"/>
  			<many-to-many column="project_id" class="com.hibernate.EmpProfile.Domain.Projects"/>
- 		</set>
+ 		</set>	
  		
  	</class>
  </hibernate-mapping>

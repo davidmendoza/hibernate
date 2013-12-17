@@ -3,8 +3,14 @@ package com.hibernate.EmpProfile.Logic;
 import java.util.Scanner;
 
 public class EmployeeMenu {
+	private static final int ADD_EMPLOYEES = 1;
+	private static final int VIEW_EMPLOYEES = 2;
+	private static final int DELETE_EMPLOYEES = 3;
+	private static final int UPDATE_EMPLOYEES = 4;
+	private static final int MANAGE_PROJECTS = 5;
+	private static final int TEST_HQL = 6;
 	
-	public static void startProgram(){
+	public static void startProgram() {
 		
 		int choice;
 		Scanner sc = new Scanner(System.in);
@@ -19,6 +25,7 @@ public class EmployeeMenu {
 			System.out.println("[3] Delete Employee/s");
 			System.out.println("[4] Update Employee Details");
 			System.out.println("[5] Manage Projects");
+			System.out.println("[6] Test HQL");
 			System.out.print(":$ ");
 			
 			while (!sc.hasNextInt()){
@@ -28,26 +35,29 @@ public class EmployeeMenu {
 			
 			choice = sc.nextInt();
 			switch(choice){
-			case 1:
+			case ADD_EMPLOYEES:
 				empLogic.add();
 			break;
 			
-			case 2:
+			case VIEW_EMPLOYEES:
 				empLogic.view();
 			break;
 			
-			case 3:
+			case DELETE_EMPLOYEES:
 				empLogic.delete();
 			break;
 			
-			case 4:
+			case UPDATE_EMPLOYEES:
 				empLogic.update();
 			break;
 			
-			case 5:
+			case MANAGE_PROJECTS:
 				projMenu.startProjectManagement();
 			break;
 			
+			case TEST_HQL:
+				TestSearch.testSearch();
+			break;
 			default:
 			break;
 			}

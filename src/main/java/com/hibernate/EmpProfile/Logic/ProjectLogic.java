@@ -1,6 +1,7 @@
 package com.hibernate.EmpProfile.Logic;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -63,10 +64,17 @@ public class ProjectLogic {
 					System.out.println("\tEmployee Does not exist");
 					session.getTransaction().rollback();
 				} else {
-					Projects proj = (Projects)session.get(Projects.class, projId);
-					ed.getProjects().add(proj);
-					session.getTransaction().commit();
-					System.out.println("\tAdded "+ed.getLastName()+", "+ed.getFirstName()+" to Project "+proj.getProjName());
+					if (ed.getDept().getDeptName().equals("Dev")|| ed.getDept().getDeptName().equals("QA")){
+						Projects proj = (Projects)session.get(Projects.class, projId);
+						ed.getProjects().add(proj);
+						session.getTransaction().commit();
+						System.out.println("\tAdded "+ed.getLastName()+", "+ed.getFirstName()+" to Project "+proj.getProjName());
+					} else {
+						
+						session.getTransaction().rollback();
+						System.out.println("\tDepartment: "+ed.getDept().getDeptName());
+						System.out.println("\t"+ed.getLastName()+", "+ed.getFirstName()+" is not a Developer or QA personnel");
+					}
 				}
 			} catch(HibernateException e) {
 				session.getTransaction().rollback();
@@ -120,10 +128,10 @@ public class ProjectLogic {
 					System.out.println("\tRemoved "+emp.getLastName()+", "+emp.getFirstName()+" from project "+proj.getProjName());
 				} catch(HibernateException e) {
 					session.getTransaction().rollback();
-					System.err.println("There was a problem with the database "+ e);
+					System.err.println("\tThere was a problem with the database "+ e);
 				}
 			} else {
-				System.out.println("Employee is not in the project");
+				System.out.println("\tEmployee is not in the project");
 			}
 		}
 	}
@@ -140,7 +148,7 @@ public class ProjectLogic {
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
 				session.getTransaction().begin();
-				String hql = "select count(*) from Projects b JOIN b.employees e where b.id = :projId)";
+				String hql = "select count(*) from Projects b JOIN b.employees e where b.id = :projId";
 				Query query = session.createQuery(hql);
 				query.setParameter("projId", projId);
 				empCount = (Long)query.list().get(0);
@@ -169,6 +177,35 @@ public class ProjectLogic {
 			System.out.println("\tProject not found");
 		}
 		
+	}
+	
+	public void projPerEmployee(){
+		int empId;
+		Session session = null;
+		Scanner sc = new Scanner(System.in);
+		//select p from Projects p join p.employees e where e.id = 4
+		try{
+			System.out.println("\tThe following employees have projects under them: ");
+			session = HibernateUtil.getSessionFactory().getCurrentSession();
+			session.getTransaction().begin();
+			String hql = "select distinct e from Employee e join e.projects";
+			Query query = session.createQuery(hql);
+			List<Employee> result = query.list();
+			for (Employee ed: result){
+				System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getDept().getDeptName());
+				System.out.print("\tProjects:   ");
+				Iterator<Projects> iter = ed.getProjects().iterator();
+				while (iter.hasNext()){
+					System.out.print(iter.next().getProjName()+"  |");
+				}
+				System.out.println();
+			}
+			session.getTransaction().rollback();
+			
+		} catch(HibernateException e) {
+			session.getTransaction().rollback();
+			System.err.println("\tThere was a problem with the database "+ e);
+		}
 	}
 	
 	private static int getProjId(){
@@ -226,9 +263,9 @@ public class ProjectLogic {
 					System.out.println("\tNo employees registered in this project");
 				} else {
 					System.out.println("\tEmployees registered under the project: ");
-					System.out.println("\tEmployee Id - Employee Name ");
+					System.out.println("\tEmployee Id - Employee Name - Department");
 					for (Employee ed: employees){
-						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName());
+						System.out.println("\t"+ed.getId()+" - "+ed.getLastName()+", "+ed.getFirstName()+" - "+ed.getDept().getDeptName());
 						employeeIds.add(ed.getId());
 					}
 				}
@@ -236,7 +273,7 @@ public class ProjectLogic {
 				return employeeIds;
 			} catch(HibernateException e) {
 				session.getTransaction().rollback();
-				System.err.println("There was a problem with the database "+ e);
+				System.err.println("\tThere was a problem with the database "+ e);
 			}
 		} else {
 			System.out.println("\tProject not found");

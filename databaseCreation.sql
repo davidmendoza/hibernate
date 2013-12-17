@@ -27,6 +27,7 @@ CREATE  TABLE IF NOT EXISTS `EmployeeProfile`.`EmployeeDetails` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
+  `gender` VARCHAR(10) NOT NULL,
   `age` INT NOT NULL ,
   `deptId` INT NOT NULL ,
   PRIMARY KEY (`id`) ,
