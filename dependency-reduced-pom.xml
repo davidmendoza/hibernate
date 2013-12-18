@@ -27,6 +27,12 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>hibernate3-maven-plugin</artifactId>
         <version>3.0</version>
+        <configuration>
+          <hibernatetool>
+            <configuration />
+            <hbm2ddl />
+          </hibernatetool>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>

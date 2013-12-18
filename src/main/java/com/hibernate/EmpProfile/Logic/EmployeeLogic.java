@@ -44,7 +44,7 @@ public class EmployeeLogic {
 			System.err.println("\tThere was an error in the database: "+e);
 		} finally {
 			if (session!= null) { 
-				session.close();
+				session.getTransaction().commit();
 			}
 		}
 		

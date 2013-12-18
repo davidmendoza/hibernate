@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <taskdef classname="org.hibernate.tool.ant.HibernateToolTask" name="hibernatetool"/>
+  <mkdir dir="/home/dmendoza/workspace/EmpProfile/target/sql/hibernate3"/>
+  <hibernatetool destdir="/home/dmendoza/workspace/EmpProfile/target/sql/hibernate3">
+    <configuration configurationfile="/home/dmendoza/workspace/EmpProfile/target/classes/hibernate.cfg.xml" propertyfile="src/main/resources/hibernate.cfg.xml"/>
+    <hbm2ddl update="true" export="false" console="true" outputfilename="testSchema.ddl" drop="true" format="true" create="true"/>
+  </hibernatetool>
+</target>
+</project>

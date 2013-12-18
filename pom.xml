@@ -59,16 +59,15 @@
         <version>3.1.0.CR2</version>
     </dependency>
     <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>1.6.4</version>
-    </dependency>
-
-    <dependency>
         <groupId>mysql</groupId>
         <artifactId>mysql-connector-java</artifactId>
         <version>5.1.10</version>
-    </dependency>
+    </dependency>		
+	<dependency>
+		<groupId>org.hibernate</groupId>
+		<artifactId>hibernate-c3p0</artifactId>
+		<version>4.2.8.Final</version>
+	</dependency>
   </dependencies>
 <build>
  <plugins>
@@ -92,6 +91,15 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>hibernate3-maven-plugin</artifactId>
         <version>3.0</version>
+        <configuration>
+        <hibernatetool>
+            <configuration
+                    propertyfile="src/main/resources/hibernate.cfg.xml" />
+            <hbm2ddl update="true" create="true" drop="true" export="false"
+                     outputfilename="testSchema.ddl" format="true"
+                     console="true"/>
+        </hibernatetool> 
+    	</configuration>
    </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
