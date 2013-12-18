@@ -28,12 +28,8 @@ public class EmployeeMenu {
 			System.out.println("[6] Test HQL");
 			System.out.print(":$ ");
 			
-			while (!sc.hasNextInt()){
-				System.out.print("Please enter a valid number :$ ");
-				sc.next();
-			}
+			choice = checkIntInput(sc);
 			
-			choice = sc.nextInt();
 			switch(choice){
 			case ADD_EMPLOYEES:
 				empLogic.add();
@@ -65,6 +61,19 @@ public class EmployeeMenu {
 		} while (choice != 0);
 		sc.close();
 		System.out.println("Goodbye!");
+	}
+	
+	public static int checkIntInput(Scanner sc){
+		
+		int choice;
+		while (!sc.hasNextInt()){
+			System.out.print("\tPlease enter a valid number :$ ");
+			sc.next();
+		}
+		
+		choice = sc.nextInt();
+		
+		return choice;
 	}
 
 }

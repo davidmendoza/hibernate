@@ -1,8 +1,10 @@
 package com.hibernate.EmpProfile.Logic;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -54,11 +56,7 @@ public class EmployeeLogic {
 		Scanner sc = new Scanner(System.in);
 		System.out.print("\t[1]View All [2]Search by name [3]Search by Department :$ ");
 		
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next(); 
-		}
-		choice = sc.nextInt();
+		choice = EmployeeMenu.checkIntInput(sc);
 		
 		switch(choice) {
 		case VIEW_ALL_EMPLOYEES :
@@ -141,11 +139,7 @@ public class EmployeeLogic {
 		try {
 			System.out.print("\tEnter Department ID:$ ");
 			
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			deptId = sc.nextInt();
+			deptId = EmployeeMenu.checkIntInput(sc);
 			
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
@@ -183,12 +177,8 @@ public class EmployeeLogic {
 		
 		try {
 			System.out.print("\n\tEnter the ID of the employee you wish to delete :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next();
-			}
 			
-			id = sc.nextInt();
+			id = EmployeeMenu.checkIntInput(sc);
 			
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
@@ -200,20 +190,12 @@ public class EmployeeLogic {
 				if (!ed.getProjects().isEmpty()){
 					System.out.print("\tThis employee is still working on "+ed.getProjects().size()+
 							" projects.\n\tDo you still want to delete? [1]Yes/[2]No :$ ");
-					while (!sc.hasNextInt()){
-						System.out.print("\tPlease enter a valid number :$ ");
-						sc.next();
-					}
-					choice = sc.nextInt();
+					choice = EmployeeMenu.checkIntInput(sc);
 					deleteThisEmployee(choice, session, ed);
 					
 				} else {
 					System.out.print("\tDelete this employee? [1]Yes/[2]No :$ ");
-					while (!sc.hasNextInt()){
-						System.out.print("\tPlease enter a valid number :$ ");
-						sc.next();
-					}
-					choice = sc.nextInt();
+					choice = EmployeeMenu.checkIntInput(sc);
 					deleteThisEmployee(choice, session, ed);
 				}
 			} 
@@ -246,11 +228,7 @@ public class EmployeeLogic {
 		
 		try {		
 			System.out.print("\n\tEnter the employee id of the employee you wish to update :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next();
-			}
-			id = sc.nextInt();
+			id = EmployeeMenu.checkIntInput(sc);
 			
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
@@ -284,6 +262,7 @@ public class EmployeeLogic {
 	private static EmployeeBean getUserInput(Session session){
 		
 		EmployeeBean eb = new EmployeeBean();
+		Set<Integer> deptIdSet = new HashSet();
 		String fname;
 		String lname;
 		String gender;
@@ -299,57 +278,34 @@ public class EmployeeLogic {
 		lname = sc.nextLine();
 		
 		System.out.print("\tEnter gender [1]Male/[2]Female :$ ");
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next();
-		}
-		genChoice = sc.nextInt();
+		genChoice = EmployeeMenu.checkIntInput(sc);
 		
 		while (genChoice < 1 || genChoice > 2){
 			System.out.print("\tPlease enter either [1]Male/[2]Female :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			genChoice = sc.nextInt();
+			genChoice = EmployeeMenu.checkIntInput(sc);
 		}
 		
 		if (genChoice == 1){
 			gender = "Male";
-			
 		} else {
 			gender = "Female";
 		}
 		
 		System.out.print("\tEnter age :$ ");
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next();
-		}
-		age = sc.nextInt();
+		age = EmployeeMenu.checkIntInput(sc);
 		
 		System.out.println("\tChoose Department");
-		
 		List<Department> all = session.createQuery("from Department").list();
 		for (Department dep: all){
 			System.out.println("\t["+dep.getId()+"] "+dep.getDeptName()+"  ");
+			deptIdSet.add(dep.getId());
 		}
 		System.out.print("\t: $ ");
-	
-	
-		while (!sc.hasNextInt()){
-			System.out.print("\tPlease enter a valid number :$ ");
-			sc.next(); 
-		}
-		deptId = sc.nextInt();
+		deptId = EmployeeMenu.checkIntInput(sc);
 		
-		while (deptId < 1 || deptId > all.size()) {
+		while (!deptIdSet.contains(deptId)) {
 			System.out.print("\tPlease choose one of the choices :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			deptId = sc.nextInt();
+			deptId = EmployeeMenu.checkIntInput(sc);
 		}
 		Department dept = (Department)session.get(Department.class, deptId);
 		

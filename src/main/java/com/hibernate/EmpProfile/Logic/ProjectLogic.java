@@ -17,24 +17,29 @@ import com.hibernate.EmpProfile.Util.HibernateUtil;
 public class ProjectLogic {
 	
 	public void addProject(){
+		
 		String projName;
 		Scanner sc = new Scanner(System.in);
 		Session session = null;
 		
-		System.out.println("\tAdd New Project");
-		System.out.print("\tEnter Project Name :$ ");
-		projName = sc.nextLine();
-		
 		try {
+			System.out.println("\tAdd New Project");
+			System.out.print("\tEnter Project Name :$ ");
+			projName = sc.nextLine();
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
 			Projects proj = new Projects(projName);
 			session.save(proj);
-			session.getTransaction().commit();
 			System.out.println("\tProject Added!");
 		} catch(HibernateException e) {
-			session.getTransaction().rollback();
-			System.err.println("There was a problem with the database "+ e);
+			if (session!= null) { 
+				session.getTransaction().rollback();
+			}
+			System.err.println("\tThere was an error in the database: "+e);
+		} finally {
+			if (session!= null) { 
+				session.close();
+			}
 		}
 		
 	}
@@ -44,16 +49,12 @@ public class ProjectLogic {
 		int empId;
 		Session session = null;
 		Scanner sc = new Scanner(System.in);
+
+		projId = getProjId();
 		
-		System.out.println("\tHere is the list of the current projects: ");
-		projId = ProjectLogic.getProjId();
 		if (projId != 0) {
 			System.out.print("\tEnter the Id of the Employee you wish to add to the project :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			empId = sc.nextInt();
+			empId = EmployeeMenu.checkIntInput(sc);
 			
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
@@ -62,23 +63,20 @@ public class ProjectLogic {
 				
 				if (ed == null){
 					System.out.println("\tEmployee Does not exist");
-					session.getTransaction().rollback();
 				} else {
-					if (ed.getDept().getDeptName().equals("Dev")|| ed.getDept().getDeptName().equals("QA")){
-						Projects proj = (Projects)session.get(Projects.class, projId);
-						ed.getProjects().add(proj);
-						session.getTransaction().commit();
-						System.out.println("\tAdded "+ed.getLastName()+", "+ed.getFirstName()+" to Project "+proj.getProjName());
-					} else {
-						
-						session.getTransaction().rollback();
-						System.out.println("\tDepartment: "+ed.getDept().getDeptName());
-						System.out.println("\t"+ed.getLastName()+", "+ed.getFirstName()+" is not a Developer or QA personnel");
-					}
+					Projects proj = (Projects)session.get(Projects.class, projId);
+					ed.getProjects().add(proj);
+					System.out.println("\tAdded "+ed.getLastName()+", "+ed.getFirstName()+" to Project "+proj.getProjName());				
 				}
 			} catch(HibernateException e) {
-				session.getTransaction().rollback();
-				System.err.println("There was a problem with the database "+ e);
+				if (session!= null) { 
+					session.getTransaction().rollback();
+				}
+				System.err.println("\tThere was an error in the database: "+e);
+			} finally {
+				if (session!= null) { 
+					session.getTransaction().commit();
+				}
 			}
 		} else {
 			System.out.println("\tProject not found");
@@ -87,33 +85,28 @@ public class ProjectLogic {
 	
 	public void viewProjectTeams(){
 		int projId;
-		
-		System.out.println("\tHere is the list of the current projects: ");
 		projId = ProjectLogic.getProjId();
-		ProjectLogic.viewTeam(projId);
-		
+		viewTeam(projId);
 	}
 	
 	public void removeEmployeeFromProject(){
 		int id;
 		int projId;
 		Session session = null;
-		Set<Integer> employeeIds;
+		
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("\tRemove employee from project");
 		projId = ProjectLogic.getProjId();
-		employeeIds = ProjectLogic.viewTeam(projId);
+		Set<Integer> employeeIds = viewTeam(projId);
+		
 		if (!employeeIds.isEmpty()){
 			
 			System.out.print("\tEnter the id of the employee you wish to remove from the project :$ ");
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			id = sc.nextInt();
+			id = EmployeeMenu.checkIntInput(sc);
 			
 			if (employeeIds.contains((Integer)id)) {
+				
 				try{
 					session = HibernateUtil.getSessionFactory().getCurrentSession();
 					session.getTransaction().begin();
@@ -124,11 +117,16 @@ public class ProjectLogic {
 					query.setParameter("id", id);
 					query.setParameter("projId", projId);
 					query.executeUpdate();
-					session.getTransaction().commit();
 					System.out.println("\tRemoved "+emp.getLastName()+", "+emp.getFirstName()+" from project "+proj.getProjName());
 				} catch(HibernateException e) {
-					session.getTransaction().rollback();
-					System.err.println("\tThere was a problem with the database "+ e);
+					if (session!= null) { 
+						session.getTransaction().rollback();
+					}
+					System.err.println("\tThere was an error in the database: "+e);
+				} finally {
+					if (session!= null) { 
+						session.getTransaction().commit();
+					}
 				}
 			} else {
 				System.out.println("\tEmployee is not in the project");
@@ -143,7 +141,7 @@ public class ProjectLogic {
 		Session session = null;
 		Scanner sc = new Scanner(System.in);
 		
-		projId = ProjectLogic.getProjId();
+		projId = getProjId();
 		if (projId != 0) {
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
@@ -154,24 +152,25 @@ public class ProjectLogic {
 				empCount = (Long)query.list().get(0);
 				System.out.print("\tThere are "+empCount+" employees working on this project.\n\tAre you sure you want to delete? [1]Yes/[2]No :$ ");
 				
-				while (!sc.hasNextInt()){
-					System.out.print("\tPlease enter a valid number :$ ");
-					sc.next(); 
-				}
-				choice = sc.nextInt();
+				choice = EmployeeMenu.checkIntInput(sc);
 				
 				if (choice == 1){
 					Projects proj = (Projects)session.get(Projects.class, projId);
 					session.delete(proj);
-					session.getTransaction().commit();
 					System.out.println("\tDeleted Project "+proj.getProjName());
 				} else {
 					System.out.println("\tCancelled Deletion");
+				}
+				
+			} catch(HibernateException e) {
+				if (session!= null) { 
 					session.getTransaction().rollback();
 				}
-			} catch(HibernateException e) {
-				session.getTransaction().rollback();
-				System.err.println("There was a problem with the database "+ e);
+				System.err.println("\tThere was an error in the database: "+e);
+			} finally {
+				if (session!= null) { 
+					session.getTransaction().commit();
+				}
 			}
 		} else {
 			System.out.println("\tProject not found");
@@ -180,10 +179,8 @@ public class ProjectLogic {
 	}
 	
 	public void projPerEmployee(){
-		int empId;
 		Session session = null;
-		Scanner sc = new Scanner(System.in);
-		//select p from Projects p join p.employees e where e.id = 4
+		
 		try{
 			System.out.println("\tThe following employees have projects under them: ");
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
@@ -200,11 +197,13 @@ public class ProjectLogic {
 				}
 				System.out.println();
 			}
-			session.getTransaction().rollback();
 			
 		} catch(HibernateException e) {
-			session.getTransaction().rollback();
-			System.err.println("\tThere was a problem with the database "+ e);
+			System.err.println("\tThere was an error in the database: "+e);
+		} finally {
+			if (session!= null) { 
+				session.close();
+			}
 		}
 	}
 	
@@ -214,7 +213,7 @@ public class ProjectLogic {
 		int projId;
 		
 		try {
-			
+			System.out.println("\tHere is the list of the current projects: ");
 			session = HibernateUtil.getSessionFactory().getCurrentSession();
 			session.getTransaction().begin();
 			List<Projects> projects = session.createQuery("from Projects").list();
@@ -225,24 +224,21 @@ public class ProjectLogic {
 				System.out.println("\t"+proj.getId()+" - "+proj.getProjName());
 				ids.add(proj.getId());
 			}
-			session.getTransaction().rollback();
 			
 			System.out.print("\tChoose a project Id from the list :$ ");
 			
-			while (!sc.hasNextInt()){
-				System.out.print("\tPlease enter a valid number :$ ");
-				sc.next(); 
-			}
-			projId = sc.nextInt();
+			projId = EmployeeMenu.checkIntInput(sc);
 			
 			if (ids.contains(projId)){
 				return projId;
-			} 
-			return 0;
+			}
 			
 		} catch(HibernateException e) {
-			session.getTransaction().rollback();
-			System.err.println("There was a problem with the database "+ e);
+			System.err.println("\tThere was an error in the database: "+e);
+		} finally {
+			if (session!= null) { 
+				session.close();
+			}
 		}
 		return 0;
 	}
@@ -250,7 +246,9 @@ public class ProjectLogic {
 	private static Set viewTeam(int projId){
 		Session session = null;
 		Set<Integer> employeeIds = new HashSet();
+		
 		if (projId != 0) {
+			
 			try {
 				session = HibernateUtil.getSessionFactory().getCurrentSession();
 				session.getTransaction().begin();
@@ -269,15 +267,16 @@ public class ProjectLogic {
 						employeeIds.add(ed.getId());
 					}
 				}
-				session.getTransaction().rollback();
-				return employeeIds;
 			} catch(HibernateException e) {
-				session.getTransaction().rollback();
-				System.err.println("\tThere was a problem with the database "+ e);
+				System.err.println("\tThere was an error in the database: "+e);
+			} finally {
+				if (session!= null) { 
+					session.close();
+				}
 			}
+			
 		} else {
 			System.out.println("\tProject not found");
-			return employeeIds;
 		}
 		return employeeIds;
 	}

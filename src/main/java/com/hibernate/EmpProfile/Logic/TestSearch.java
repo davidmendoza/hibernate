@@ -38,7 +38,7 @@ public class TestSearch {
 		} catch (IllegalStateException e) {
 			System.err.println("Fail "+ e);
 		} finally {
-			session.getTransaction().rollback();
+			session.close();
 		}
 	}
 }

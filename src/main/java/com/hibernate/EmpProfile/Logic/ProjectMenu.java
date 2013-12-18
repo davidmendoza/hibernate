@@ -27,12 +27,8 @@ public class ProjectMenu {
 			System.out.println("[0] Back to Main Menu");
 			System.out.print(":$ ");
 			
-			while (!sc.hasNextInt()){
-				System.out.print("Please enter a valid number :$ ");
-				sc.next();
-			}
+			choice = EmployeeMenu.checkIntInput(sc);
 			
-			choice = sc.nextInt();
 			switch(choice){
 			case ADD_NEW_PROJECT:
 				projLogic.addProject();
